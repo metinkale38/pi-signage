@@ -1,0 +1,14 @@
+[Unit]
+Description=Mount der Daten-Partition (Read-Only)
+DefaultDependencies=no
+Conflicts=umount.target
+Before=local-fs.target umount.target
+
+[Mount]
+What=/dev/mmcblk0p2
+Where=/mnt
+Type=ext4
+Options=defaults,noatime,ro
+
+[Install]
+WantedBy=local-fs.target

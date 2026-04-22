@@ -1,0 +1,13 @@
+[Unit]
+Description=Signage Sync Script
+After=network.target
+
+[Service]
+Type=simple
+ExecStart=/bin/bash /mnt/signage/scripts/sync.sh
+User=root
+Restart=on-failure
+RestartSec=10
+
+[Install]
+WantedBy=signage.target

@@ -1,0 +1,17 @@
+[Unit]
+Description=Signage BLE Service
+After=bluetooth.service
+Requires=bluetooth.service
+After=dbus.socket
+
+[Service]
+ExecStart=/usr/bin/python3 /mnt/signage/scripts/bleconfig.py
+WorkingDirectory=/signage/
+StandardOutput=inherit
+StandardError=inherit
+Restart=on-failure
+RestartSec=5s
+User=root
+
+[Install]
+WantedBy=signage.target

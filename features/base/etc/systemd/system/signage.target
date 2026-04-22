@@ -1,0 +1,7 @@
+[Unit]
+Documentation=man:systemd.special(7)
+Requires=basic.target
+After=basic.target
+Wants=multi-user.target
+Conflicts=rescue.service rescue.target
+AllowIsolate=yes

@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WLAN Konfiguration</title>
+    <style>
+        :root {
+            --primary: #2563eb; /* Modernes Blau */
+            --bg: #f3f4f6;
+            --text: #1f2937;
+            --card-bg: #ffffff;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            margin: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+
+        .card {
+            background: var(--card-bg);
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            width: 100%;
+            max-width: 360px;
+            text-align: center;
+        }
+
+        h2 { margin-top: 0; font-weight: 600; font-size: 1.25rem; }
+
+        #status {
+            font-size: 0.85rem;
+            color: #6b7280;
+            margin-bottom: 20px;
+            padding: 8px;
+            background: #f9fafb;
+            border-radius: 6px;
+        }
+
+        input {
+            width: 100%;
+            padding: 12px;
+            margin: 8px 0;
+            border: 1px solid #d1d5db;
+            border-radius: 6px;
+            box-sizing: border-box; /* Wichtig für Padding */
+            font-size: 1rem;
+        }
+
+        input:focus {
+            outline: 2px solid var(--primary);
+            border-color: var(--primary);
+        }
+
+        button {
+            width: 100%;
+            padding: 12px;
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-size: 1rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background-color 0.2s;
+            margin-top: 10px;
+        }
+
+        button:hover { background-color: #1d4ed8; }
+
+        #current-ssid { font-weight: bold; color: var(--primary); }
+
+        .loader {
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid var(--primary);
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            animation: spin 1s linear infinite;
+            display: inline-block;
+            vertical-align: middle;
+            margin-right: 8px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+<div class="card">
+    <h2>🕌 WLAN Einrichtung</h2>
+    <div id="status">Bereit zur Verbindung</div>
+
+    <button id="connect-btn">Pi suchen & verbinden</button>
+
+    <div id="config-ui" style="display:none">
+        <p style="font-size: 0.9rem;">Aktuelles WLAN: <span id="current-ssid">...</span></p>
+        <hr style="border: 0; border-top: 1px solid #eee; margin: 20px 0;">
+        <input type="text" id="ssid" placeholder="WLAN Name (SSID)" spellcheck="false">
+        <input type="password" id="pass" placeholder="Passwort">
+        <button id="send-btn">Speichern & Verbinden</button>
+    </div>
+</div>
+
+<script>
+    const SERVICE_UUID = "610f8446-25e4-42d3-92af-6857f80cf6cd";
+    const CHAR_UUID = "1b355391-3b91-4d73-9085-7d6e42e4b5a0";
+    let char;
+
+    const statusEl = document.getElementById('status');
+    const connectBtn = document.getElementById('connect-btn');
+    const configUi = document.getElementById('config-ui');
+    const currentSsidEl = document.getElementById('current-ssid');
+    const sendBtn = document.getElementById('send-btn');
+
+    function setStatus(text, loading=false) {
+        statusEl.innerHTML = loading ? `<div class="loader"></div>${text}` : text;
+    }
+
+    connectBtn.onclick = async () => {
+        setStatus("Suche Pi...", true);
+        try {
+            const device = await navigator.bluetooth.requestDevice({
+                filters: [{ name: 'Mosque-Wifi-Config' }],
+                optionalServices: [SERVICE_UUID]
+            });
+
+            setStatus("Verbinde...", true);
+            const server = await device.gatt.connect();
+            const service = await server.getPrimaryService(SERVICE_UUID);
+            char = await service.getCharacteristic(CHAR_UUID);
+
+            setStatus("Verbunden.", false);
+
+            const val = await char.readValue();
+            currentSsidEl.innerText = new TextDecoder().decode(val);
+
+            configUi.style.display = 'block';
+            connectBtn.style.display = 'none';
+
+        } catch (error) {
+            setStatus("Fehler: " + error.message, false);
+            console.error(error);
+        }
+    };
+
+    sendBtn.onclick = async () => {
+        const ssid = document.getElementById('ssid').value.trim();
+        const pass = document.getElementById('pass').value.trim();
+
+        if (!ssid || !pass) {
+            alert("Bitte SSID und Passwort eingeben.");
+            return;
+        }
+
+        setStatus("Sende Daten...", true);
+        sendBtn.disabled = true;
+
+        const payload = `${ssid}:${pass}`;
+        try {
+            await char.writeValue(new TextEncoder().encode(payload));
+            setStatus("Daten gesendet. Pi verbindet sich neu.", false);
+            alert("Erfolgreich gesendet. Die Seite wird neu geladen.");
+            location.reload();
+        } catch (error) {
+            setStatus("Sende-Fehler: " + error.message, false);
+            sendBtn.disabled = false;
+            console.error(error);
+        }
+    };
+</script>
+</body>
+</html>

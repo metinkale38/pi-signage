@@ -1,0 +1,17 @@
+[Unit]
+Description=Signage Media Player (MPV)
+After=network.target local-fs.target
+RequiresMountsFor=/mnt
+Conflicts=getty@tty1.service
+
+[Service]
+Type=simple
+User=root
+Group=root
+WorkingDirectory=/mnt/signage/media
+ExecStart=/bin/bash /mnt/signage/scripts/start_mpv.sh
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target

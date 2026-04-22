@@ -1,0 +1,19 @@
+[Unit]
+Description=Signage WPA Supplicant
+After=network.target mnt.mount
+PartOf=signage.target
+
+[Service]
+Type=simple
+ExecStart=/bin/bash -c '\
+  /sbin/wpa_supplicant -i wlan0 -c <( \
+    echo "ctrl_interface=DIR=/var/run/wpa_supplicant GROUP=netdev"; \
+    echo "update_config=1"; \
+    IFS=":" read -r s p < /mnt/signage/config/wifi; \
+    /usr/bin/wpa_passphrase "$s" "$p" \
+  )'
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=signage.target

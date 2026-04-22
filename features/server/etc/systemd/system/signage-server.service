@@ -1,0 +1,14 @@
+[Unit]
+Description=Signage Server Service
+After=network.target
+
+[Service]
+ExecStart=/usr/bin/python3 /mnt/signage/scripts/server.py
+WorkingDirectory=/signage
+StandardOutput=inherit
+StandardError=inherit
+Restart=always
+User=root
+
+[Install]
+WantedBy=signage.target

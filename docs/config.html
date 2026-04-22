@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <style>
+        body { font-family: -apple-system, sans-serif; padding: 20px; background: #fafafa; color: #333; }
+        .container { max-width: 800px; margin: auto; }
+        .section { background: #fff; border: 1px solid #eee; padding: 20px; margin-bottom: 25px; border-radius: 4px; }
+        h3 { margin: 0 0 15px 0; font-size: 13px; text-transform: uppercase; color: #888; }
+        textarea {
+            width: 100%; height: 150px; font-family: "SFMono-Regular", Consolas, monospace;
+            font-size: 12px; border: 1px solid #ddd; padding: 10px; box-sizing: border-box;
+            resize: vertical;
+        }
+        button {
+            margin-top: 12px; background: #000; color: #fff; border: none;
+            padding: 8px 20px; cursor: pointer; font-size: 12px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="section">
+        <h3>System Configuration</h3>
+        <textarea id="config"></textarea>
+        <button onclick="save('config')">Update Config</button>
+    </div>
+
+    <div class="section">
+        <h3>RClone Credentials</h3>
+        <textarea id="rclone"></textarea>
+        <button onclick="save('rclone')">Update RClone</button>
+    </div>
+</div>
+
+<script>
+    // Daten vom Parent empfangen
+    window.addEventListener('message', (event) => {
+        if (event.data.type === 'INIT_DATA') {
+            document.getElementById('config').value = event.data.data.config;
+            document.getElementById('rclone').value = event.data.data.rclone;
+        }
+    });
+
+    // Daten an Parent senden
+    function save(key) {
+        const val = document.getElementById(key).value;
+        window.parent.postMessage({ type: 'SAVE_DATA', key: key, value: val }, '*');
+    }
+</script>
+</body>
+</html>

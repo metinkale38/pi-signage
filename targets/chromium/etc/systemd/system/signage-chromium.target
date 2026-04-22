@@ -1,0 +1,11 @@
+[Unit]
+Description=Digital Signage mit Chromium
+Documentation=man:systemd.special(7)
+
+Requires=signage.target
+After=signage.target
+
+AllowIsolate=yes
+
+[Install]
+Alias=signage-chromium.target

@@ -1,0 +1,10 @@
+seat * cursor set 0 0
+seat * hide_cursor 1
+default_border none
+default_floating_border none
+smart_borders on
+output * bg #000000 solid_color
+
+for_window [class=".*"] border none, fullscreen enable, floating disable
+for_window [app_id="otp-overlay"] floating enable, fullscreen disable, move position 1750 50, sticky enable
+exec /bin/sh /mnt/signage/scripts/start_chromium.sh
