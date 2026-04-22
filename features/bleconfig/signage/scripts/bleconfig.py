@@ -47,7 +47,6 @@ def init_tty_static(otp):
             f"  OTP-CODE:\n\n"
             f"      {green}>>> {otp} <<<{reset}\n\n"
             f"{blue}{'_' * 60}{reset}\n"
-            f"  System will reboot after disconnect if changes were made.\n"
         )
         with open(TTY_DEV, "w") as tty:
             tty.write(layout)
