@@ -28,10 +28,8 @@ logger = logging.getLogger(__name__)
 
 current_otp = str(random.randint(100000, 999999))
 authenticated = False
-client_was_connected = False # Fehlte oben in deinen globalen Definitionen
 
 # --- TTY Logik (Einmalig/Statisch) ---
-
 def init_tty_static(otp):
     """Beschreibt TTY2 einmalig beim Start."""
     try:
@@ -76,8 +74,6 @@ def write_to_file(filepath, data):
 # --- BLE Callbacks ---
 
 def on_read(characteristic: BlessGATTCharacteristic):
-    if characteristic.uuid == CHAR_OTP_UUID:
-        return bytearray("Enter Code", "utf-8")
     if not authenticated:
         return bytearray("LOCKED", "utf-8")
 
@@ -100,6 +96,7 @@ def on_write(characteristic: BlessGATTCharacteristic, value: bytearray):
 
     if characteristic.uuid == CHAR_OTP_UUID:
         if val == "SHOWOTP":
+            authenticated = False
             subprocess.run(["chvt", "2"])
             asyncio.create_task(auto_switch_back())
             logger.info("OTP auf TTY2 angezeigt.")
@@ -148,9 +145,14 @@ async def run():
         )
 
     await server.start()
-    logger.info("BLE Server läuft...")
-    while True:
+    logger.info("BLE Server läuft für 30min...")
+    for _ in range(1800):
         await asyncio.sleep(1)
+    while authenticated:
+        await asyncio.sleep(1)
+
+    logger.info("Zeit abgelaufen und keiner mehr eingeloggt. Shutdown.")
+    await server.stop()
 
 if __name__ == "__main__":
     asyncio.run(run())

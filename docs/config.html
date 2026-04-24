@@ -23,14 +23,12 @@
 <div class="container">
     <div class="section">
         <h3>System Configuration</h3>
-        <textarea id="config"></textarea>
-        <button onclick="save('config')">Update Config</button>
+        <textarea onchange="save('config')" id="config"></textarea>
     </div>
 
     <div class="section">
         <h3>RClone Credentials</h3>
-        <textarea id="rclone"></textarea>
-        <button onclick="save('rclone')">Update RClone</button>
+        <textarea onchange="save('rclone')" id="rclone"></textarea>
     </div>
 </div>
 
